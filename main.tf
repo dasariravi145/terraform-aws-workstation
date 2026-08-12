@@ -29,3 +29,27 @@ resource "aws_instance" "workstation" {
     )
 
 }
+
+resource "terraform_data" "cluster_destroy" {
+
+       input = {
+           
+             host     = aws_instance.workstation.public_ip
+             password = var.ssh_password
+       }
+
+       provisioner "remote-exec" {
+
+             when = destroy
+             inline = [
+                   "eksctl delete cluster -f /home/ec2-user/eksctl/eks.yaml --wait"
+             ]
+             connection {
+
+                  type = "ssh"
+                  host = self.input.host
+                  user = "ec2-user"
+                  password = self.input.password
+             }
+       }
+}
